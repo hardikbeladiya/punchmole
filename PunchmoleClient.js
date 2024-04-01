@@ -3,7 +3,7 @@ const WebSocket = require('ws').WebSocket;
 const http = require('http');
 function PunchmoleClient(apiKey, domain, targetUrl, endpointUrl, log = console) {
     const eventEmitter = new EventEmitter()
-    const ws = new WebSocket(endpointUrl)
+    let ws = new WebSocket(endpointUrl)
 
     ws.on('open', () => {
         log.info(new Date(), 'connection with upstream server opened to forward url', targetUrl)
@@ -21,6 +21,7 @@ function PunchmoleClient(apiKey, domain, targetUrl, endpointUrl, log = console) 
     ws.on('close', () => {
         log.info(new Date(), 'connection with upstream server closed')
         clearInterval(interval)
+         ws = new WebSocket(endpointUrl)
         eventEmitter.emit('close')
     })
     ws.on('error', (err) => {
