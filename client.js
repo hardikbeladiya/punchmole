@@ -3,10 +3,10 @@ import 'dotenv/config'
 
 import { PunchmoleClient } from "./app.js";
 
-const PUNCHMOLE_ENDPOINT_URL = process.env.PUNCHMOLE_ENDPOINT_URL || 'ws://localhost:10000/_punchmole'
-const PUNCHMOLE_API_KEY = process.env.PUNCHMOLE_API_KEY
-const DOMAIN = process.env.DOMAIN
-const TARGET_URL = process.env.TARGET_URL || 'http://localhost:3000'
+const PUNCHMOLE_ENDPOINT_URL = 'wss://jira.matlabinfotech.com/_punchmole'
+const PUNCHMOLE_API_KEY = 'vmtsuogjkf'
+const DOMAIN = 'jira.matlabinfotech.com'
+const TARGET_URL =  'http://192.168.29.165:8080'
 
 if(!DOMAIN) {
     console.error('please specify a domain by using environment variable DOMAIN')

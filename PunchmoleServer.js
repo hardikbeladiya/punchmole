@@ -1,13 +1,13 @@
-import crypto from "node:crypto";
-import express from "express";
-import http from "node:http";
-import {WebSocketServer} from "ws";
+const crypto = require("crypto");
+const express = require("express");
+const http = require("http");
+const { WebSocketServer } = require("ws");
 
 function generateRandomId() {
     return crypto.randomBytes(16).toString("hex")
 }
 
-export async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', log = console) {
+async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', log = console) {
     if(apiKeys.filter((v) => v !== "").length === 0) {
         throw new Error('invalid api keys, please check apiKeys argument')
     }
@@ -213,4 +213,9 @@ export async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchm
         server,
         wss
     }
+}
+
+
+module.exports = {
+    PunchmoleServer
 }

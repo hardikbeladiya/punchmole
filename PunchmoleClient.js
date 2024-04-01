@@ -1,8 +1,7 @@
-import { EventEmitter } from 'node:events'
-import { WebSocket } from 'ws'
-import http from 'node:http'
-
-export function PunchmoleClient(apiKey, domain, targetUrl, endpointUrl, log = console) {
+const { EventEmitter } = require('events');
+const WebSocket = require('ws').WebSocket;
+const http = require('http');
+function PunchmoleClient(apiKey, domain, targetUrl, endpointUrl, log = console) {
     const eventEmitter = new EventEmitter()
     const ws = new WebSocket(endpointUrl)
 
@@ -13,7 +12,7 @@ export function PunchmoleClient(apiKey, domain, targetUrl, endpointUrl, log = co
     })
     const interval = setInterval(() => {
         ws.ping()
-    }, 10000)
+    }, 100000)
     ws.on('ping', () => {
         ws.pong()
     })
@@ -208,4 +207,9 @@ export function PunchmoleClient(apiKey, domain, targetUrl, endpointUrl, log = co
         }
     })
     return eventEmitter
+}
+
+
+module.exports = {
+    PunchmoleClient
 }

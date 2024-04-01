@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import 'dotenv/config'
+require('dotenv/config')
 
-import { PunchmoleServer } from "./app.js";
+const { PunchmoleServer } = require("./app.js");
 
 const PORT = process.env.PORT || 10000
 const API_KEYS = (process.env.API_KEYS || "").split(',')
