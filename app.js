@@ -1,7 +1,7 @@
-import { PunchmoleClient } from "./PunchmoleClient.js";
-import { PunchmoleServer } from "./PunchmoleServer.js";
+const { PunchmoleClient } = require("./PunchmoleClient.js");
+const { PunchmoleServer } = require("./PunchmoleServer.js");
 
-export {
+module.exports = {
     PunchmoleServer,
     PunchmoleClient
-}
+};

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-import 'dotenv/config'
+require('dotenv/config')
 
-import { PunchmoleClient } from "./app.js";
+const { PunchmoleClient } = require("./app.js");
 
 const PUNCHMOLE_ENDPOINT_URL = process.env.PUNCHMOLE_ENDPOINT_URL || 'ws://localhost:10000/_punchmole'
 const PUNCHMOLE_API_KEY = process.env.PUNCHMOLE_API_KEY
