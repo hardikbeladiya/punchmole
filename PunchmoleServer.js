@@ -31,11 +31,11 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
 
     wss.on('error', log.error)
     wss.on('connection', (socket) => {
-        log.info(new Date(), 'client connection open', socket._socket.headers, socket._socket.origin_url)
+        log.error(new Date(), 'client connection open', socket._socket.headers, socket._socket.origin_url)
         // if it's a punchmole client connection and not a foreign request connection
         if(socket._socket.origin_url === endpointUrlPath) {
             socket.on('close', () => {
-                log.info(new Date(), 'connection closed', socket.domain)
+                log.error(new Date(), 'connection closed', socket.domain)
                 delete domainsToConnections[socket.domain]
             })
             socket.on('message', async (rawMessage) => {
@@ -47,7 +47,7 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                 switch (message.type) {
                     case 'register':
                         if (apiKeys.includes(message.apiKey)) {
-                            log.info(new Date(), 'registering socket for domain', message)
+                            log.error(new Date(), 'registering socket for domain', message)
                             domainsToConnections[message.domain] = {
                                 status: 'alive',
                                 socket: socket
@@ -61,13 +61,13 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                         }
                         break
                     case 'response-start':
-                        log.info(new Date(), 'response start, request id', message.id, message.headers)
+                        log.error(new Date(), 'response start, request id', message.id, message.headers)
                         if (request) {
                             request.responseObject.status(message.statusCode)
                             request.responseObject.statusMessage = message.statusMessage
                             request.responseObject.set(message.headers)
                             request.responseObject.on('close', () => {
-                                log.info(new Date(), 'connection closed, stop sending data', message.id)
+                                log.error(new Date(), 'connection closed, stop sending data', message.id)
                                 openRequests = openRequests.filter((v) => v.id !== message.id)
                                 socket.send(JSON.stringify({type: 'request-end', id: message.id}))
                             })
@@ -85,7 +85,7 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                         }
                         break
                     case 'data-end':
-                        log.info(new Date(), 'finishing sending data for request', message.id)
+                        log.error(new Date(), 'finishing sending data for request', message.id)
                         if (request) {
                             request.responseObject.end()
                         } else {
@@ -112,11 +112,11 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
             const requestedDomain = socket._socket.headers.host.match(/^(.*?)(:[0-9]{1,}|)$/)[1]
             const foreignHost = domainsToConnections[requestedDomain]
             if(!foreignHost) {
-                log.info(new Date(), 'received a websocket connection attempt for a domain not registered (yet), closing it', requestedDomain)
+                log.error(new Date(), 'received a websocket connection attempt for a domain not registered (yet), closing it', requestedDomain)
                 socket.close()
             } else {
                 socket.connectionId = generateRandomId()
-                log.info(new Date(), 'received a websocket connection from a normal client and not a punchmole client, forwarding...', socket.connectionId, requestedDomain)
+                // log.error(new Date(), 'received a websocket connection from a normal client and not a punchmole client, forwarding...', socket.connectionId, requestedDomain)
                 openWebsocketConnections[socket.connectionId] = {
                     date: new Date(),
                     id: socket.connectionId,
@@ -130,7 +130,7 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                     url: socket._socket.origin_url
                 }))
                 socket.on('error', (error) => {
-                    log.info(new Date(), 'got error from client websocket connection', socket.connectionId, error)
+                    log.error(new Date(), 'got error from client websocket connection', socket.connectionId, error)
                     foreignHost.socket.send(JSON.stringify({
                         type: 'websocket-error',
                         id: socket.connectionId,
@@ -138,7 +138,7 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                     }))
                 })
                 socket.on('close', () => {
-                    log.info(new Date(), 'client websocket closed', socket.connectionId)
+                    log.error(new Date(), 'client websocket closed', socket.connectionId)
                     foreignHost.socket.send(JSON.stringify({
                         type: 'websocket-connection-closed',
                         id: socket.connectionId,
@@ -147,7 +147,7 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                     delete openWebsocketConnections[socket.connectionId]
                 })
                 socket.on('message', (rawData) => {
-                    log.info(new Date(), 'received data from client websocket connection, forwarding...', socket.connectionId)
+                    // log.error(new Date(), 'received data from client websocket connection, forwarding...', socket.connectionId)
                     foreignHost.socket.send(JSON.stringify({
                         type: 'websocket-message',
                         id: socket.connectionId,
@@ -174,11 +174,11 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                 headers: req.headers,
                 body: req.body,
             }
-            log.debug(new Date(), '-> forward to remote client', JSON.stringify(requestForward))
+            // log.debug(new Date(), '-> forward to remote client', JSON.stringify(requestForward))
             openRequests.push({...requestForward, requestObject: req, responseObject: res})
             foreignHost.socket.send(JSON.stringify(requestForward))
             req.on('data', (data) => {
-                log.debug(new Date(), '--> request data received', requestForward.id, data.length)
+                // log.debug(new Date(), '--> request data received', requestForward.id, data.length)
                 foreignHost.socket.send(JSON.stringify({
                     type: 'request-data',
                     date: new Date(),
@@ -187,7 +187,7 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
                 }))
             })
             req.on('end', () => {
-                log.debug(new Date(), '--> request data reception ended', requestForward.id)
+                // log.debug(new Date(), '--> request data reception ended', requestForward.id)
                 foreignHost.socket.send(JSON.stringify({
                     type: 'request-data-end',
                     date: new Date(),
@@ -205,7 +205,7 @@ async function PunchmoleServer(port, apiKeys, endpointUrlPath = '/_punchmole', l
 
 
     server.listen(port, () => {
-        log.info(new Date(), `server is listening on port ${port}`)
+        log.error(new Date(), `server is listening on port ${port}`)
     })
 
     return {
